@@ -8,7 +8,7 @@ metadata:
 spec:
   project: bsis
   source:
-    repoURL: https://github.com/HABTec/bsis-k8s.git
+    repoURL: https://github.com/AbenezerAtnafu/bsis-k8s.git
     targetRevision: main
     path: platform/monitoring-config
   destination:

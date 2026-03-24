@@ -19,7 +19,7 @@ spec:
     spec:
       project: bsis
       sources:
-        - repoURL: https://github.com/HABTec/bsis-k8s.git
+        - repoURL: https://github.com/AbenezerAtnafu/bsis-k8s.git
           targetRevision: main
           path: apps/rabbitmq/overlays/{{env}}
         - repoURL: https://charts.bitnami.com/bitnami

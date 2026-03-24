@@ -6,7 +6,7 @@ metadata:
 spec:
   generators:
     - git:
-        repoURL: https://github.com/HABTec/bsis-k8s.git
+        repoURL: https://github.com/AbenezerAtnafu/bsis-k8s.git
         revision: main
         directories:
           - path: apps/*/overlays/development
@@ -18,7 +18,7 @@ spec:
     spec:
       project: bsis
       source:
-        repoURL: https://github.com/HABTec/bsis-k8s.git
+        repoURL: https://github.com/AbenezerAtnafu/bsis-k8s.git
         targetRevision: main
         path: "{{path}}"
       destination:

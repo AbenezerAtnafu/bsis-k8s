@@ -6,7 +6,7 @@ metadata:
 spec:
   description: BSIS workloads deployed to CCE
   sourceRepos:
-    - "https://github.com/HABTec/bsis-k8s.git"
+    - https://github.com/AbenezerAtnafu/bsis-k8s.git
     - "https://prometheus-community.github.io/helm-charts"
     - "https://charts.bitnami.com/bitnami"
     - "https://kubernetes.github.io/ingress-nginx"
