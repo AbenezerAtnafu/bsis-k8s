@@ -1,0 +1,43 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bsis-ingress-nginx
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  project: bsis
+  source:
+    repoURL: https://kubernetes.github.io/ingress-nginx
+    chart: ingress-nginx
+    targetRevision: 4.11.3
+    helm:
+      releaseName: ingress-nginx
+      values: |
+        controller:
+          ingressClassResource:
+            name: nginx
+            enabled: true
+            default: false
+          ingressClass: nginx
+          metrics:
+            enabled: true
+          service:
+            type: LoadBalancer
+            externalTrafficPolicy: Local
+            annotations:
+              kubernetes.io/elb.class: union
+              kubernetes.io/elb.pass-through: "true"
+              # Leave empty for automatic ELB/EIP behavior.
+              # Set these if you want to bind a specific ELB or EIP.
+              kubernetes.io/elb.id: "df2bf23a-ac44-4157-be82-d6209e404163"
+              kubernetes.io/elb.eip-id: ""
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: ingress-nginx
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

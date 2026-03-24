@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core-api
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/environment: staging
+        app.kubernetes.io/instance: core-api-staging
+    spec:
+      containers:
+        - name: app
+          env:
+            - name: APP_ENV
+              value: staging

@@ -1,0 +1,11 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: core-api
+spec:
+  tls:
+    - hosts:
+        - core-api-staging.example.com
+      secretName: core-api-staging-tls
+  rules:
+    - host: core-api-staging.example.com

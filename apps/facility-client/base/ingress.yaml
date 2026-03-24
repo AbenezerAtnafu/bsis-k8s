@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: facility-client
+  labels:
+    app.kubernetes.io/name: facility-client
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: bsis
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - facility-client.example.com
+      secretName: facility-client-tls
+  rules:
+    - host: facility-client.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: facility-client
+                port:
+                  name: http

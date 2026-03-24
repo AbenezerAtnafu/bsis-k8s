@@ -1,0 +1,14 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: main-client
+  labels:
+    app.kubernetes.io/name: main-client
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: bsis
+    app.kubernetes.io/managed-by: argocd
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: main-client

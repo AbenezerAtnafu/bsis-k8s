@@ -1,0 +1,36 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: devices-integration-api-allow-ingress
+  labels:
+    app.kubernetes.io/name: devices-integration-api
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: bsis
+    app.kubernetes.io/managed-by: argocd
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: devices-integration-api
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 5601
+      # Allow HL7 from anywhere - lab devices may be external
+      # Restrict with from: rules if devices are in known ranges
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 5672
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 9000

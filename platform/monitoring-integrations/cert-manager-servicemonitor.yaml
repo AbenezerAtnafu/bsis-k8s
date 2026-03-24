@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cert-manager-servicemonitor
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: cert-manager-servicemonitor
+    app.kubernetes.io/component: observability
+    app.kubernetes.io/part-of: bsis
+    app.kubernetes.io/managed-by: argocd
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: cert-manager
+      app.kubernetes.io/component: controller
+      app.kubernetes.io/instance: cert-manager
+      app.kubernetes.io/name: cert-manager
+  namespaceSelector:
+    matchNames:
+      - cert-manager
+  endpoints:
+    - port: tcp-prometheus-servicemonitor
+      path: /metrics
+      interval: 30s
+      honorLabels: true

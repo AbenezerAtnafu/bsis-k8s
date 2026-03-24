@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: facility-client
+  labels:
+    app.kubernetes.io/name: facility-client
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: bsis
+    app.kubernetes.io/managed-by: argocd
+spec:
+  selector:
+    app.kubernetes.io/name: facility-client
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

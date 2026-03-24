@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: identity-service-config
+  labels:
+    app.kubernetes.io/name: identity-service-config
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: bsis
+    app.kubernetes.io/managed-by: argocd
+data:
+  SERVER_PORT: "9000"
+  OAUTH2_TOKEN_URL: "https://identity-service-development.example.com/oauth2/token"
+  OAUTH2_AUTHORIZATION_URL: "https://identity-service-development.example.com/oauth2/authorize"
+  SPRINGDOC_SWAGGER_UI_OAUTH2_REDIRECT_URL: "https://identity-service-development.example.com/swagger-ui/oauth2-redirect.html"
+  SPRINGDOC_SWAGGER_UI_OAUTH_CLIENT_ID: "public-client"
+  SPRINGDOC_SWAGGER_UI_OAUTH_USE_PKCE_WITH_AUTHORIZATION_CODE_GRANT: "true"
+  SPRINGDOC_SHOW_OAUTH2_ENDPOINTS: "true"
+  SPRINGDOC_SHOW_ACTUATOR: "true"
+  APP_BSIS_WEB_URL: "https://app-development.example.com/"
+  APP_FACILITY_WEB_URL: "https://app-development.example.com/"
+  APP_SECURITY_WEB_CLIENT_ID: "public-client"
+  APP_SECURITY_MOBILE_CLIENT_ID: "mobile-client"
+  APP_SECURITY_TABLET_CLIENT_ID: "tablet-client"
+  APP_SECURITY_ALLOWED_ORIGINS: "https://oauth.pstmn.io,https://app-development.example.com,https://identity-service-development.example.com"
+  APP_SECURITY_PUBLIC_CLIENT_REDIRECT_URIS: "https://identity-service-development.example.com/swagger-ui/oauth2-redirect.html,https://oauth.pstmn.io/v1/callback,https://app-development.example.com,https://app-development.example.com/silent-renew.html"
+  APP_SECURITY_API_CLIENT_CLIENT_ID: "spring-api-client"
+  APP_SECURITY_API_CLIENT_AUTHORIZATION_GRANT_TYPE: "client_credentials"
+  APP_SECURITY_ACCESS_TOKEN_TIME_TO_LIVE: "8400"
+  MANAGEMENT_SERVER_PORT: "9001"
+  MANAGEMENT_SERVER_ADDRESS: "127.0.0.1"
+  SPRING_RABBITMQ_HOST: "rabbitmq"
+  SPRING_RABBITMQ_PORT: "5672"

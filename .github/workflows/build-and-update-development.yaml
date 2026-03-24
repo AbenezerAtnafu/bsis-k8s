@@ -1,0 +1,66 @@
+name: Build Push and Update Development Overlay
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/habtec/bsis-app
+  OVERLAY_FILE: apps/bsis-app/overlays/development/kustomization.yaml
+
+jobs:
+  build_push_update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: vars
+        run: echo "tag=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tag }}
+            ${{ env.IMAGE_NAME }}:development-latest
+
+      - name: Install yq
+        uses: mikefarah/yq@v4.44.5
+
+      - name: Update development overlay image tag
+        run: |
+          yq -i '(.images[] | select(.name == "ghcr.io/habtec/bsis-app")).newTag = strenv(NEW_TAG)' "${OVERLAY_FILE}"
+        env:
+          NEW_TAG: ${{ steps.vars.outputs.tag }}
+
+      - name: Commit and push overlay update
+        run: |
+          if git diff --quiet; then
+            echo "No overlay updates detected."
+            exit 0
+          fi
+          git add "${OVERLAY_FILE}"
+          git commit -m "chore(deploy): update development image tag to ${NEW_TAG}"
+          git push
+        env:
+          NEW_TAG: ${{ steps.vars.outputs.tag }}

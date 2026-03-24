@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devices-integration-api
+  labels:
+    app.kubernetes.io/name: devices-integration-api
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: bsis
+    app.kubernetes.io/managed-by: argocd
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: devices-integration-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: devices-integration-api
+        app.kubernetes.io/component: api
+        app.kubernetes.io/part-of: bsis
+        app.kubernetes.io/managed-by: argocd
+    spec:
+      serviceAccountName: devices-integration-api
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      initContainers:
+        - name: config-init
+          image: alpine:3.19
+          command:
+            - /bin/sh
+            - -c
+            - |
+              apk add --no-cache gettext
+              envsubst < /configmap/config.properties > /config/config.properties
+              echo "Config generated successfully"
+          envFrom:
+            - configMapRef:
+                name: devices-integration-api-config
+            - secretRef:
+                name: devices-integration-api-secrets
+          volumeMounts:
+            - name: configmap
+              mountPath: /configmap
+              readOnly: true
+            - name: config
+              mountPath: /config
+      containers:
+        - name: app
+          image: ghcr.io/habtec/bsis-devices-integration-api:latest
+          imagePullPolicy: IfNotPresent
+          workingDir: /app
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cp /config/config.properties /app/config.properties
+              exec java -jar /app/AlinityCIInterface.jar
+          ports:
+            - name: hl7
+              containerPort: 5601
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: data
+              mountPath: /app/data
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+          startupProbe:
+            tcpSocket:
+              port: hl7
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 24
+          readinessProbe:
+            tcpSocket:
+              port: hl7
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            tcpSocket:
+              port: hl7
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+      volumes:
+        - name: configmap
+          configMap:
+            name: devices-integration-api-config
+        - name: config
+          emptyDir: {}
+        - name: data
+          emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: devices-integration-api
+                topologyKey: kubernetes.io/hostname

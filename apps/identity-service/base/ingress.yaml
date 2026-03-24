@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: identity-service
+  labels:
+    app.kubernetes.io/name: identity-service
+    app.kubernetes.io/component: identity
+    app.kubernetes.io/part-of: bsis
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - identity-service.example.com
+      secretName: identity-service-tls
+  rules:
+    - host: identity-service.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: identity-service
+                port:
+                  name: http

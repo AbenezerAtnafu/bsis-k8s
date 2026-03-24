@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: app-production
+
+resources:
+  - ../../base
+  - configmap-facility-client.yaml
+
+images:
+  - name: ghcr.io/habtec/facility-client
+    newTag: production-latest
+
+patchesStrategicMerge:
+  - patch-deployment.yaml
+  - patch-ingress.yaml
+  - patch-hpa.yaml

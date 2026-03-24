@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: main-client-config
+  labels:
+    app.kubernetes.io/name: main-client-config
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: bsis
+    app.kubernetes.io/managed-by: argocd
+data:
+  runtime-config.js: |
+    window.__MAIN_CLIENT_CONFIG__ = {
+      apiUrl: "https://core-api.example.com/bsis/",
+      identityApiUrl: "https://identity-service.example.com/api",
+      oAuthIssuer: "https://identity-service.example.com",
+      oAuthClientId: "public-client",
+      oAuthScope: "openid profile",
+    };

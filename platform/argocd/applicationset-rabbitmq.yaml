@@ -1,0 +1,55 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: bsis-rabbitmq
+  namespace: argocd
+spec:
+  generators:
+    - list:
+        elements:
+          - env: development
+            namespace: app-development
+          - env: staging
+            namespace: app-staging
+          - env: production
+            namespace: app-production
+  template:
+    metadata:
+      name: "rabbitmq-{{env}}"
+    spec:
+      project: bsis
+      sources:
+        - repoURL: https://github.com/HABTec/bsis-k8s.git
+          targetRevision: main
+          path: apps/rabbitmq/overlays/{{env}}
+        - repoURL: https://charts.bitnami.com/bitnami
+          chart: rabbitmq
+          targetRevision: "14.6.0"
+          helm:
+            releaseName: rabbitmq
+            values: |
+              auth:
+                username: user
+                existingPasswordSecret: rabbitmq-credentials
+                existingSecretPasswordKey: RABBITMQ_PASSWORD
+              replicaCount: 1
+              persistence:
+                enabled: true
+                size: 8Gi
+              metrics:
+                enabled: true
+                serviceMonitor:
+                  enabled: true
+                  namespace: "{{namespace}}"
+              commonLabels:
+                app.kubernetes.io/part-of: bsis
+                app.kubernetes.io/managed-by: argocd
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{namespace}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true

@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: core-api
+  labels:
+    app.kubernetes.io/name: core-api
+    app.kubernetes.io/component: api
+    app.kubernetes.io/part-of: bsis
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - core-api.example.com
+      secretName: core-api-tls
+  rules:
+    - host: core-api.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: core-api
+                port:
+                  name: http

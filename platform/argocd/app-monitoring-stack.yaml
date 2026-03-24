@@ -1,0 +1,99 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bsis-monitoring-stack
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: bsis
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 58.5.1
+    helm:
+      releaseName: prometheus
+      values: |
+        grafana:
+          enabled: true
+          defaultDashboardsEnabled: true
+          sidecar:
+            dashboards:
+              enabled: true
+            datasources:
+              enabled: true
+          persistence:
+            enabled: true
+            storageClassName: csi-disk
+            size: 20Gi
+          ingress:
+            enabled: true
+            ingressClassName: nginx
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt-production
+            hosts:
+              - grafana.example.com
+            tls:
+              - secretName: grafana-production-tls
+                hosts:
+                  - grafana.example.com
+
+        alertmanager:
+          enabled: true
+          alertmanagerSpec:
+            retention: 120h
+            secrets:
+              - alertmanager-slack
+            storage:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: csi-disk
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 20Gi
+          config:
+            global:
+              resolve_timeout: 5m
+            route:
+              group_by: ["alertname", "namespace", "job"]
+              group_wait: 30s
+              group_interval: 5m
+              repeat_interval: 4h
+              receiver: slack-notifications
+            receivers:
+              - name: slack-notifications
+                slack_configs:
+                  - channel: "#grafana"
+                    send_resolved: true
+                    api_url_file: /etc/alertmanager/secrets/alertmanager-slack/webhook-url
+
+        prometheus:
+          enabled: true
+          prometheusSpec:
+            retention: 15d
+            serviceMonitorSelectorNilUsesHelmValues: false
+            serviceMonitorNamespaceSelector: {}
+            podMonitorSelectorNilUsesHelmValues: false
+            podMonitorNamespaceSelector: {}
+            ruleSelectorNilUsesHelmValues: false
+            ruleNamespaceSelector: {}
+            scrapeConfigSelectorNilUsesHelmValues: false
+            scrapeConfigNamespaceSelector: {}
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: csi-disk
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 100Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

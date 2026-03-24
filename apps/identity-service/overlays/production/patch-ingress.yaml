@@ -1,0 +1,11 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: identity-service
+spec:
+  tls:
+    - hosts:
+        - identity-service.example.com
+      secretName: identity-service-production-tls
+  rules:
+    - host: identity-service.example.com

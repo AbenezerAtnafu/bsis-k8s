@@ -1,0 +1,11 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: main-client
+spec:
+  tls:
+    - hosts:
+        - main-client.example.com
+      secretName: main-client-production-tls
+  rules:
+    - host: main-client.example.com

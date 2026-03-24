@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: app-production
+
+resources:
+  - ../../base
+  - configmap-core-api.yaml
+  - secretstore-vault.yaml
+  - externalsecret-core-api.yaml
+
+images:
+  - name: ghcr.io/habtec/bsis-spring-boot-api
+    newTag: production-latest
+
+patchesStrategicMerge:
+  - patch-deployment.yaml
+  - patch-ingress.yaml
+  - patch-hpa.yaml

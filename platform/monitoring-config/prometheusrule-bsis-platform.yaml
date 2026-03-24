@@ -1,0 +1,66 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: bsis-platform-alerts
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: bsis-platform-alerts
+    app.kubernetes.io/component: observability
+    app.kubernetes.io/part-of: bsis
+    app.kubernetes.io/managed-by: argocd
+    release: prometheus
+spec:
+  groups:
+    - name: bsis.kubernetes.availability
+      rules:
+        - alert: BSISDeploymentReplicasMismatch
+          expr: kube_deployment_spec_replicas{namespace=~"app-(development|staging|production)"} > kube_deployment_status_replicas_available{namespace=~"app-(development|staging|production)"}
+          for: 10m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: Deployment has unavailable replicas
+            description: Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has fewer available replicas than desired for more than 10 minutes.
+
+        - alert: BSISPodCrashLooping
+          expr: max_over_time(kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff",namespace=~"app-(development|staging|production)"}[10m]) >= 1
+          for: 10m
+          labels:
+            severity: critical
+            team: platform
+          annotations:
+            summary: Pod is crash looping
+            description: Pod {{ $labels.namespace }}/{{ $labels.pod }} is in CrashLoopBackOff for over 10 minutes.
+
+        - alert: BSISPodRestartHigh
+          expr: increase(kube_pod_container_status_restarts_total{namespace=~"app-(development|staging|production)"}[15m]) > 3
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: Pod restarted frequently
+            description: Container {{ $labels.container }} in pod {{ $labels.namespace }}/{{ $labels.pod }} restarted more than 3 times in 15 minutes.
+
+    - name: bsis.kubernetes.capacity
+      rules:
+        - alert: BSISNodeCPUHigh
+          expr: (100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 85
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: Node CPU usage is high
+            description: Node {{ $labels.instance }} CPU utilization has been above 85% for 15 minutes.
+
+        - alert: BSISNodeMemoryHigh
+          expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+          for: 15m
+          labels:
+            severity: warning
+            team: platform
+          annotations:
+            summary: Node memory usage is high
+            description: Node {{ $labels.instance }} memory utilization has been above 90% for 15 minutes.

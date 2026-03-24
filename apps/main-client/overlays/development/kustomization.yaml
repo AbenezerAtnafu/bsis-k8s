@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: app-development
+
+resources:
+  - ../../base
+  - configmap-main-client.yaml
+
+images:
+  - name: ghcr.io/habtec/main-client
+    newTag: development-latest
+
+patchesStrategicMerge:
+  - patch-deployment.yaml
+  - patch-ingress.yaml
+  - patch-hpa.yaml

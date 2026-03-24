@@ -1,0 +1,11 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: facility-client
+spec:
+  tls:
+    - hosts:
+        - facility-client-development.example.com
+      secretName: facility-client-development-tls
+  rules:
+    - host: facility-client-development.example.com

@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bsis-app
+  labels:
+    app.kubernetes.io/name: bsis-app
+    app.kubernetes.io/component: application
+    app.kubernetes.io/part-of: bsis
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - app.example.com
+      secretName: bsis-app-tls
+  rules:
+    - host: app.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: bsis-app
+                port:
+                  name: http

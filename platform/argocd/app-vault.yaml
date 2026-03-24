@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bsis-vault
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-3"
+spec:
+  project: bsis
+  source:
+    repoURL: https://helm.releases.hashicorp.com
+    chart: vault
+    targetRevision: 0.29.1
+    helm:
+      releaseName: vault
+      values: |
+        global:
+          enabled: true
+          tlsDisable: true
+        injector:
+          enabled: false
+        server:
+          standalone:
+            enabled: false
+          ha:
+            enabled: true
+            replicas: 3
+            raft:
+              enabled: true
+          dataStorage:
+            enabled: true
+            storageClass: csi-disk
+            size: 20Gi
+          auditStorage:
+            enabled: true
+            storageClass: csi-disk
+            size: 10Gi
+          service:
+            enabled: true
+          ingress:
+            enabled: false
+          metrics:
+            enabled: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

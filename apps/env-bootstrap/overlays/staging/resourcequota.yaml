@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: app-staging-quota
+  labels:
+    app.kubernetes.io/part-of: bsis
+    app.kubernetes.io/managed-by: argocd
+    app.kubernetes.io/environment: staging
+spec:
+  hard:
+    requests.cpu: "3"
+    requests.memory: 4Gi
+    limits.cpu: "12"
+    limits.memory: 8Gi
+    pods: "40"
+    services: "15"
+    configmaps: "40"
+    secrets: "60"
