@@ -27,6 +27,8 @@ spec:
         app.kubernetes.io/managed-by: argocd
     spec:
       serviceAccountName: identity-service
+      imagePullSecrets:
+        - name: ghcr-pull-secret
       securityContext:
         runAsNonRoot: true
         seccompProfile:

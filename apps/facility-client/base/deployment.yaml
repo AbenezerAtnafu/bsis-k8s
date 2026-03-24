@@ -27,6 +27,8 @@ spec:
         app.kubernetes.io/managed-by: argocd
     spec:
       serviceAccountName: facility-client
+      imagePullSecrets:
+        - name: ghcr-pull-secret
       securityContext:
         runAsNonRoot: true
         seccompProfile:
